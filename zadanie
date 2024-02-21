@@ -1,0 +1,29 @@
+import pandas as pd 
+import seaborn as sns 
+import matplotlib.pyplot as plt 
+from sklearn.preprocessing import StandardScaler 
+from sklearn.cluster import KMeans, ElbowMethod 
+from sklearn.decomposition import PCA 
+ 
+# Загрузите данные 
+df = pd.read_csv('Mall_Customers.csv') 
+ 
+# Предобработка данных 
+df['Gender'] = df['Gender'].astype('category').cat.codes 
+df_scaled = StandardScaler().fit_transform(df[['Age', 'Annual Income (k$)', 'Spending Score (1-100)']]) 
+ 
+# Кластеризация K-Means 
+kmeans = KMeans() 
+elbow = ElbowMethod(kmeans, df_scaled) 
+elbow.fit() 
+kmeans = KMeans(n_clusters=elbow.get_n_clusters()) 
+kmeans.fit(df_scaled) 
+ 
+# Визуализация 
+pca = PCA(n_components=2) 
+pca_data = pca.fit_transform(df_scaled) 
+plt.scatter(pca_data[:, 0], pca_data[:, 1], c=kmeans.labels_) 
+plt.show() 
+ 
+# Характеристики кластеров 
+print(df_scaled.groupby(kmeans.labels_).mean())
